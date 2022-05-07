@@ -9,6 +9,7 @@ g++	-fPIC \
 	-Wextra \
 	-Wformat=2 \
 	-Wno-unused-function \
+	-Wno-unused-variable \
 	-Wpointer-arith \
 	-Wshadow \
 	-Wsign-conversion \
