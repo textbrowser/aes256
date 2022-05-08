@@ -4,13 +4,7 @@
 
 int main(void)
 {
-  std::vector<uint8_t> key;
-
-  /*
-  ** Set a test key.
-  */
-
-  aes256 a(key);
+  aes256 a("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f");
 
   return EXIT_SUCCESS;
 }
