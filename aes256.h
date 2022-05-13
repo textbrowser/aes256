@@ -119,6 +119,12 @@ class aes256
 
   ~aes256()
   {
+    for(size_t i = 0; i < m_key.size(); i++)
+      m_key[i] = 0;
+
+    m_key.clear();
+    memset(m_round_key, 0, 4 * 60 * sizeof(m_round_key[0][0]));
+    memset(m_state, 0, 4 * 4 * sizeof(m_state[0][0]));
   }
 
   static void hex_string_to_vector
@@ -148,6 +154,65 @@ class aes256
 
   void key_expansion(void)
   {
+    size_t i = 0;
+
+    while(i < m_Nk)
+      {
+	auto product = 4 * i;
+
+	m_round_key[i][0] = m_key[product + 0];
+	m_round_key[i][1] = m_key[product + 1];
+	m_round_key[i][2] = m_key[product + 2];
+	m_round_key[i][3] = m_key[product + 3];
+	i += 1;
+      }
+
+    uint8_t temp[4];
+
+    while(i < m_Nb * (m_Nr + 1))
+      {
+	auto difference = i - 1;
+
+	temp[0] = m_round_key[difference][0];
+	temp[1] = m_round_key[difference][1];
+	temp[2] = m_round_key[difference][2];
+	temp[3] = m_round_key[difference][3];
+
+	if(m_Nk > 0 && i % m_Nk == 0)
+	  {
+	    auto quotient = i / m_Nk;
+	    uint8_t t = temp[0];
+
+	    temp[0] = temp[1];
+	    temp[1] = temp[2];
+	    temp[2] = temp[3];
+	    temp[3] = t;
+	    temp[0] = s_sbox[static_cast<size_t> (temp[0])] ^
+	      s_rcon[quotient][0];
+	    temp[1] = s_sbox[static_cast<size_t> (temp[1])] ^
+	      s_rcon[quotient][1];
+	    temp[2] = s_sbox[static_cast<size_t> (temp[2])] ^
+	      s_rcon[quotient][2];
+	    temp[3] = s_sbox[static_cast<size_t> (temp[3])] ^
+	      s_rcon[quotient][3];
+	    t = 0;
+	  }
+	else if(m_Nk > 0 && i % m_Nk == 4)
+	  {
+	    temp[0] = s_sbox[static_cast<size_t> (temp[0])];
+	    temp[1] = s_sbox[static_cast<size_t> (temp[1])];
+	    temp[2] = s_sbox[static_cast<size_t> (temp[2])];
+	    temp[3] = s_sbox[static_cast<size_t> (temp[3])];
+	  }
+
+	difference = i - m_Nk;
+	m_round_key[i][0] = m_round_key[difference][0] ^ temp[0];
+	m_round_key[i][1] = m_round_key[difference][1] ^ temp[1];
+	m_round_key[i][2] = m_round_key[difference][2] ^ temp[2];
+	m_round_key[i][3] = m_round_key[difference][3] ^ temp[3];
+	memset(temp, 0, 4 * sizeof(temp[0]));
+	i += 1;
+      }
   }
 
   void memset(void *s, int c, size_t n)
