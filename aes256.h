@@ -152,6 +152,151 @@ class aes256
   uint8_t m_round_key[60][4] {};
   uint8_t m_state[4][4] {}; // 4 rows, Nb columns.
 
+  uint8_t xtime(uint8_t x)
+  {
+    return static_cast<uint8_t> ((x << 1) ^ (((x >> 7) & 1) * 0x1b));
+  }
+
+  uint8_t xtime_special(uint8_t x, uint8_t y)
+  {
+    auto xtime_y = xtime(y);
+
+    return static_cast<uint8_t>
+      (((x & 1) * y) ^
+       (((x >> 1) & 1) * xtime_y) ^
+       (((x >> 2) & 1) * xtime(xtime_y)) ^
+       (((x >> 3) & 1) * xtime(xtime(xtime_y))) ^
+       (((x >> 4) & 1) * xtime(xtime(xtime(xtime_y)))));
+  }
+
+  void add_round_key(size_t c)
+  {
+    auto product = c * m_Nb;
+
+    m_state[0][0] ^= m_round_key[product + 0][0];
+    m_state[0][1] ^= m_round_key[product + 1][0];
+    m_state[0][2] ^= m_round_key[product + 2][0];
+    m_state[0][3] ^= m_round_key[product + 3][0];
+    m_state[1][0] ^= m_round_key[product + 0][1];
+    m_state[1][1] ^= m_round_key[product + 1][1];
+    m_state[1][2] ^= m_round_key[product + 2][1];
+    m_state[1][3] ^= m_round_key[product + 3][1];
+    m_state[2][0] ^= m_round_key[product + 0][2];
+    m_state[2][1] ^= m_round_key[product + 1][2];
+    m_state[2][2] ^= m_round_key[product + 2][2];
+    m_state[2][3] ^= m_round_key[product + 3][2];
+    m_state[3][0] ^= m_round_key[product + 0][3];
+    m_state[3][1] ^= m_round_key[product + 1][3];
+    m_state[3][2] ^= m_round_key[product + 2][3];
+    m_state[3][3] ^= m_round_key[product + 3][3];
+  }
+
+  void inv_mix_columns(void)
+  {
+    uint8_t a[4];
+
+    a[0] = m_state[0][0];
+    a[1] = m_state[1][0];
+    a[2] = m_state[2][0];
+    a[3] = m_state[3][0];
+    m_state[0][0] = xtime_special(0x0e, a[0]) ^ xtime_special(0x0b, a[1]) ^
+      xtime_special(0x0d, a[2]) ^ xtime_special(0x09, a[3]);
+    m_state[1][0] = xtime_special(0x09, a[0]) ^ xtime_special(0x0e, a[1]) ^
+      xtime_special(0x0b, a[2]) ^ xtime_special(0x0d, a[3]);
+    m_state[2][0] = xtime_special(0x0d, a[0]) ^ xtime_special(0x09, a[1]) ^
+      xtime_special(0x0e, a[2]) ^ xtime_special(0x0b, a[3]);
+    m_state[3][0] = xtime_special(0x0b, a[0]) ^ xtime_special(0x0d, a[1]) ^
+      xtime_special(0x09, a[2]) ^ xtime_special(0x0e, a[3]);
+    a[0] = m_state[0][1];
+    a[1] = m_state[1][1];
+    a[2] = m_state[2][1];
+    a[3] = m_state[3][1];
+    m_state[0][1] = xtime_special(0x0e, a[0]) ^ xtime_special(0x0b, a[1]) ^
+      xtime_special(0x0d, a[2]) ^ xtime_special(0x09, a[3]);
+    m_state[1][1] = xtime_special(0x09, a[0]) ^ xtime_special(0x0e, a[1]) ^
+      xtime_special(0x0b, a[2]) ^ xtime_special(0x0d, a[3]);
+    m_state[2][1] = xtime_special(0x0d, a[0]) ^ xtime_special(0x09, a[1]) ^
+      xtime_special(0x0e, a[2]) ^ xtime_special(0x0b, a[3]);
+    m_state[3][1] = xtime_special(0x0b, a[0]) ^ xtime_special(0x0d, a[1]) ^
+      xtime_special(0x09, a[2]) ^ xtime_special(0x0e, a[3]);
+    a[0] = m_state[0][2];
+    a[1] = m_state[1][2];
+    a[2] = m_state[2][2];
+    a[3] = m_state[3][2];
+    m_state[0][2] = xtime_special(0x0e, a[0]) ^ xtime_special(0x0b, a[1]) ^
+      xtime_special(0x0d, a[2]) ^ xtime_special(0x09, a[3]);
+    m_state[1][2] = xtime_special(0x09, a[0]) ^ xtime_special(0x0e, a[1]) ^
+      xtime_special(0x0b, a[2]) ^ xtime_special(0x0d, a[3]);
+    m_state[2][2] = xtime_special(0x0d, a[0]) ^ xtime_special(0x09, a[1]) ^
+      xtime_special(0x0e, a[2]) ^ xtime_special(0x0b, a[3]);
+    m_state[3][2] = xtime_special(0x0b, a[0]) ^ xtime_special(0x0d, a[1]) ^
+      xtime_special(0x09, a[2]) ^ xtime_special(0x0e, a[3]);
+    a[0] = m_state[0][3];
+    a[1] = m_state[1][3];
+    a[2] = m_state[2][3];
+    a[3] = m_state[3][3];
+    m_state[0][3] = xtime_special(0x0e, a[0]) ^ xtime_special(0x0b, a[1]) ^
+      xtime_special(0x0d, a[2]) ^ xtime_special(0x09, a[3]);
+    m_state[1][3] = xtime_special(0x09, a[0]) ^ xtime_special(0x0e, a[1]) ^
+      xtime_special(0x0b, a[2]) ^ xtime_special(0x0d, a[3]);
+    m_state[2][3] = xtime_special(0x0d, a[0]) ^ xtime_special(0x09, a[1]) ^
+      xtime_special(0x0e, a[2]) ^ xtime_special(0x0b, a[3]);
+    m_state[3][3] = xtime_special(0x0b, a[0]) ^ xtime_special(0x0d, a[1]) ^
+      xtime_special(0x09, a[2]) ^ xtime_special(0x0e, a[3]);
+    memset(a, 0, 4 * sizeof(a[0]));
+  }
+
+  void inv_shift_rows(void)
+  {
+    uint8_t temp[4];
+
+    temp[0] = m_state[1][0];
+    temp[1] = m_state[1][1];
+    temp[2] = m_state[1][2];
+    temp[3] = m_state[1][3];
+    m_state[1][(1 + 0) % m_Nb] = temp[0];
+    m_state[1][(1 + 1) % m_Nb] = temp[1];
+    m_state[1][(1 + 2) % m_Nb] = temp[2];
+    m_state[1][(1 + 3) % m_Nb] = temp[3];
+    temp[0] = m_state[2][0];
+    temp[1] = m_state[2][1];
+    temp[2] = m_state[2][2];
+    temp[3] = m_state[2][3];
+    m_state[2][(2 + 0) % m_Nb] = temp[0];
+    m_state[2][(2 + 1) % m_Nb] = temp[1];
+    m_state[2][(2 + 2) % m_Nb] = temp[2];
+    m_state[2][(2 + 3) % m_Nb] = temp[3];
+    temp[0] = m_state[3][0];
+    temp[1] = m_state[3][1];
+    temp[2] = m_state[3][2];
+    temp[3] = m_state[3][3];
+    m_state[3][(3 + 0) % m_Nb] = temp[0];
+    m_state[3][(3 + 1) % m_Nb] = temp[1];
+    m_state[3][(3 + 2) % m_Nb] = temp[2];
+    m_state[3][(3 + 3) % m_Nb] = temp[3];
+    memset(temp, 0, 4 * sizeof(temp[0]));
+  }
+
+  void inv_sub_bytes(void)
+  {
+    m_state[0][0] = s_inv_sbox[static_cast<size_t> (m_state[0][0])];
+    m_state[0][1] = s_inv_sbox[static_cast<size_t> (m_state[0][1])];
+    m_state[0][2] = s_inv_sbox[static_cast<size_t> (m_state[0][2])];
+    m_state[0][3] = s_inv_sbox[static_cast<size_t> (m_state[0][3])];
+    m_state[1][0] = s_inv_sbox[static_cast<size_t> (m_state[1][0])];
+    m_state[1][1] = s_inv_sbox[static_cast<size_t> (m_state[1][1])];
+    m_state[1][2] = s_inv_sbox[static_cast<size_t> (m_state[1][2])];
+    m_state[1][3] = s_inv_sbox[static_cast<size_t> (m_state[1][3])];
+    m_state[2][0] = s_inv_sbox[static_cast<size_t> (m_state[2][0])];
+    m_state[2][1] = s_inv_sbox[static_cast<size_t> (m_state[2][1])];
+    m_state[2][2] = s_inv_sbox[static_cast<size_t> (m_state[2][2])];
+    m_state[2][3] = s_inv_sbox[static_cast<size_t> (m_state[2][3])];
+    m_state[3][0] = s_inv_sbox[static_cast<size_t> (m_state[3][0])];
+    m_state[3][1] = s_inv_sbox[static_cast<size_t> (m_state[3][1])];
+    m_state[3][2] = s_inv_sbox[static_cast<size_t> (m_state[3][2])];
+    m_state[3][3] = s_inv_sbox[static_cast<size_t> (m_state[3][3])];
+  }
+
   void key_expansion(void)
   {
     size_t i = 0;
