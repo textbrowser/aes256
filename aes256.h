@@ -208,6 +208,62 @@ class aes256
     return b;
   }
 
+  std::vector<uint8_t> encrypt_block(const std::vector<uint8_t> &block)
+  {
+    std::vector<uint8_t> b;
+
+    if(block.size() != 16)
+      return b;
+
+    b.resize(16);
+    m_state[0][0] = block[0 + 4 * 0];
+    m_state[0][1] = block[0 + 4 * 1];
+    m_state[0][2] = block[0 + 4 * 2];
+    m_state[0][3] = block[0 + 4 * 3];
+    m_state[1][0] = block[1 + 4 * 0];
+    m_state[1][1] = block[1 + 4 * 1];
+    m_state[1][2] = block[1 + 4 * 2];
+    m_state[1][3] = block[1 + 4 * 3];
+    m_state[2][0] = block[2 + 4 * 0];
+    m_state[2][1] = block[2 + 4 * 1];
+    m_state[2][2] = block[2 + 4 * 2];
+    m_state[2][3] = block[2 + 4 * 3];
+    m_state[3][0] = block[3 + 4 * 0];
+    m_state[3][1] = block[3 + 4 * 1];
+    m_state[3][2] = block[3 + 4 * 2];
+    m_state[3][3] = block[3 + 4 * 3];
+    add_round_key(0);
+
+    for(size_t i = 1; i < m_Nr; i++)
+      {
+	sub_bytes();
+	shift_rows();
+	mix_columns();
+	add_round_key(i);
+      }
+
+    sub_bytes();
+    shift_rows();
+    add_round_key(m_Nr);
+    b[0 + 4 * 0] = m_state[0][0];
+    b[0 + 4 * 1] = m_state[0][1];
+    b[0 + 4 * 2] = m_state[0][2];
+    b[0 + 4 * 3] = m_state[0][3];
+    b[1 + 4 * 0] = m_state[1][0];
+    b[1 + 4 * 1] = m_state[1][1];
+    b[1 + 4 * 2] = m_state[1][2];
+    b[1 + 4 * 3] = m_state[1][3];
+    b[2 + 4 * 0] = m_state[2][0];
+    b[2 + 4 * 1] = m_state[2][1];
+    b[2 + 4 * 2] = m_state[2][2];
+    b[2 + 4 * 3] = m_state[2][3];
+    b[3 + 4 * 0] = m_state[3][0];
+    b[3 + 4 * 1] = m_state[3][1];
+    b[3 + 4 * 2] = m_state[3][2];
+    b[3 + 4 * 3] = m_state[3][3];
+    return b;
+  }
+
   uint8_t xtime(uint8_t x)
   {
     return static_cast<uint8_t> ((x << 1) ^ (((x >> 7) & 1) * 0x1b));
