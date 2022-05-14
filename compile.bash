@@ -23,4 +23,5 @@ g++	-fPIC \
 	-Wstrict-overflow=5 \
 	-Wundef \
 	-pedantic \
+	-std=c++17 \
 	test.cc -o test

@@ -152,6 +152,62 @@ class aes256
   uint8_t m_round_key[60][4] {};
   uint8_t m_state[4][4] {}; // 4 rows, Nb columns.
 
+  std::vector<uint8_t> decrypt_block(const std::vector<uint8_t> &block)
+  {
+    std::vector<uint8_t> b;
+
+    if(block.size() != 16)
+      return b;
+
+    b.resize(16);
+    m_state[0][0] = block[0 + 4 * 0];
+    m_state[0][1] = block[0 + 4 * 1];
+    m_state[0][2] = block[0 + 4 * 2];
+    m_state[0][3] = block[0 + 4 * 3];
+    m_state[1][0] = block[1 + 4 * 0];
+    m_state[1][1] = block[1 + 4 * 1];
+    m_state[1][2] = block[1 + 4 * 2];
+    m_state[1][3] = block[1 + 4 * 3];
+    m_state[2][0] = block[2 + 4 * 0];
+    m_state[2][1] = block[2 + 4 * 1];
+    m_state[2][2] = block[2 + 4 * 2];
+    m_state[2][3] = block[2 + 4 * 3];
+    m_state[3][0] = block[3 + 4 * 0];
+    m_state[3][1] = block[3 + 4 * 1];
+    m_state[3][2] = block[3 + 4 * 2];
+    m_state[3][3] = block[3 + 4 * 3];
+    add_round_key(m_Nr);
+
+    for(size_t i = m_Nr - 1; i > 0; i--)
+      {
+	inv_shift_rows();
+	inv_sub_bytes();
+	add_round_key(i);
+	inv_mix_columns();
+      }
+
+    inv_shift_rows();
+    inv_sub_bytes();
+    add_round_key(0);
+    b[0 + 4 * 0] = m_state[0][0];
+    b[0 + 4 * 1] = m_state[0][1];
+    b[0 + 4 * 2] = m_state[0][2];
+    b[0 + 4 * 3] = m_state[0][3];
+    b[1 + 4 * 0] = m_state[1][0];
+    b[1 + 4 * 1] = m_state[1][1];
+    b[1 + 4 * 2] = m_state[1][2];
+    b[1 + 4 * 3] = m_state[1][3];
+    b[2 + 4 * 0] = m_state[2][0];
+    b[2 + 4 * 1] = m_state[2][1];
+    b[2 + 4 * 2] = m_state[2][2];
+    b[2 + 4 * 3] = m_state[2][3];
+    b[3 + 4 * 0] = m_state[3][0];
+    b[3 + 4 * 1] = m_state[3][1];
+    b[3 + 4 * 2] = m_state[3][2];
+    b[3 + 4 * 3] = m_state[3][3];
+    return b;
+  }
+
   uint8_t xtime(uint8_t x)
   {
     return static_cast<uint8_t> ((x << 1) ^ (((x >> 7) & 1) * 0x1b));
