@@ -370,6 +370,114 @@ class aes256
     while(n--)
       *v++ = (unsigned char) c;
   }
+
+  void mix_columns(void)
+  {
+    uint8_t a[4];
+    uint8_t b[4];
+
+    a[0] = m_state[0][0];
+    a[1] = m_state[1][0];
+    a[2] = m_state[2][0];
+    a[3] = m_state[3][0];
+    b[0] = xtime(m_state[0][0]);
+    b[1] = xtime(m_state[1][0]);
+    b[2] = xtime(m_state[2][0]);
+    b[3] = xtime(m_state[3][0]);
+    m_state[0][0] = b[0] ^ a[1] ^ b[1] ^ a[2] ^ a[3];
+    m_state[1][0] = a[0] ^ b[1] ^ a[2] ^ b[2] ^ a[3];
+    m_state[2][0] = a[0] ^ a[1] ^ b[2] ^ a[3] ^ b[3];
+    m_state[3][0] = a[0] ^ b[0] ^ a[1] ^ a[2] ^ b[3];
+    a[0] = m_state[0][1];
+    a[1] = m_state[1][1];
+    a[2] = m_state[2][1];
+    a[3] = m_state[3][1];
+    b[0] = xtime(m_state[0][1]);
+    b[1] = xtime(m_state[1][1]);
+    b[2] = xtime(m_state[2][1]);
+    b[3] = xtime(m_state[3][1]);
+    m_state[0][1] = b[0] ^ a[1] ^ b[1] ^ a[2] ^ a[3];
+    m_state[1][1] = a[0] ^ b[1] ^ a[2] ^ b[2] ^ a[3];
+    m_state[2][1] = a[0] ^ a[1] ^ b[2] ^ a[3] ^ b[3];
+    m_state[3][1] = a[0] ^ b[0] ^ a[1] ^ a[2] ^ b[3];
+    a[0] = m_state[0][2];
+    a[1] = m_state[1][2];
+    a[2] = m_state[2][2];
+    a[3] = m_state[3][2];
+    b[0] = xtime(m_state[0][2]);
+    b[1] = xtime(m_state[1][2]);
+    b[2] = xtime(m_state[2][2]);
+    b[3] = xtime(m_state[3][2]);
+    m_state[0][2] = b[0] ^ a[1] ^ b[1] ^ a[2] ^ a[3];
+    m_state[1][2] = a[0] ^ b[1] ^ a[2] ^ b[2] ^ a[3];
+    m_state[2][2] = a[0] ^ a[1] ^ b[2] ^ a[3] ^ b[3];
+    m_state[3][2] = a[0] ^ b[0] ^ a[1] ^ a[2] ^ b[3];
+    a[0] = m_state[0][3];
+    a[1] = m_state[1][3];
+    a[2] = m_state[2][3];
+    a[3] = m_state[3][3];
+    b[0] = xtime(m_state[0][3]);
+    b[1] = xtime(m_state[1][3]);
+    b[2] = xtime(m_state[2][3]);
+    b[3] = xtime(m_state[3][3]);
+    m_state[0][3] = b[0] ^ a[1] ^ b[1] ^ a[2] ^ a[3];
+    m_state[1][3] = a[0] ^ b[1] ^ a[2] ^ b[2] ^ a[3];
+    m_state[2][3] = a[0] ^ a[1] ^ b[2] ^ a[3] ^ b[3];
+    m_state[3][3] = a[0] ^ b[0] ^ a[1] ^ a[2] ^ b[3];
+    memset(a, 0, 4 * sizeof(a[0]));
+    memset(b, 0, 4 * sizeof(b[0]));
+  }
+
+  void shift_rows(void)
+  {
+    uint8_t temp[4];
+
+    temp[0] = m_state[1][(1 + 0) % m_Nb];
+    temp[1] = m_state[1][(1 + 1) % m_Nb];
+    temp[2] = m_state[1][(1 + 2) % m_Nb];
+    temp[3] = m_state[1][(1 + 3) % m_Nb];
+    m_state[1][0] = temp[0];
+    m_state[1][1] = temp[1];
+    m_state[1][2] = temp[2];
+    m_state[1][3] = temp[3];
+    temp[0] = m_state[2][(2 + 0) % m_Nb];
+    temp[1] = m_state[2][(2 + 1) % m_Nb];
+    temp[2] = m_state[2][(2 + 2) % m_Nb];
+    temp[3] = m_state[2][(2 + 3) % m_Nb];
+    m_state[2][0] = temp[0];
+    m_state[2][1] = temp[1];
+    m_state[2][2] = temp[2];
+    m_state[2][3] = temp[3];
+    temp[0] = m_state[3][(3 + 0) % m_Nb];
+    temp[1] = m_state[3][(3 + 1) % m_Nb];
+    temp[2] = m_state[3][(3 + 2) % m_Nb];
+    temp[3] = m_state[3][(3 + 3) % m_Nb];
+    m_state[3][0] = temp[0];
+    m_state[3][1] = temp[1];
+    m_state[3][2] = temp[2];
+    m_state[3][3] = temp[3];
+    memset(temp, 0, 4 * sizeof(temp[0]));
+  }
+
+  void sub_bytes(void)
+  {
+    m_state[0][0] = s_sbox[static_cast<size_t> (m_state[0][0])];
+    m_state[0][1] = s_sbox[static_cast<size_t> (m_state[0][1])];
+    m_state[0][2] = s_sbox[static_cast<size_t> (m_state[0][2])];
+    m_state[0][3] = s_sbox[static_cast<size_t> (m_state[0][3])];
+    m_state[1][0] = s_sbox[static_cast<size_t> (m_state[1][0])];
+    m_state[1][1] = s_sbox[static_cast<size_t> (m_state[1][1])];
+    m_state[1][2] = s_sbox[static_cast<size_t> (m_state[1][2])];
+    m_state[1][3] = s_sbox[static_cast<size_t> (m_state[1][3])];
+    m_state[2][0] = s_sbox[static_cast<size_t> (m_state[2][0])];
+    m_state[2][1] = s_sbox[static_cast<size_t> (m_state[2][1])];
+    m_state[2][2] = s_sbox[static_cast<size_t> (m_state[2][2])];
+    m_state[2][3] = s_sbox[static_cast<size_t> (m_state[2][3])];
+    m_state[3][0] = s_sbox[static_cast<size_t> (m_state[3][0])];
+    m_state[3][1] = s_sbox[static_cast<size_t> (m_state[3][1])];
+    m_state[3][2] = s_sbox[static_cast<size_t> (m_state[3][2])];
+    m_state[3][3] = s_sbox[static_cast<size_t> (m_state[3][3])];
+  }
 };
 
 #endif
