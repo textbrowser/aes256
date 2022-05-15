@@ -29,6 +29,7 @@
 #define AES256_H
 
 #include <cstdint>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -107,13 +108,13 @@ class aes256
     m_Nk = 8;
     m_Nr = 14;
     m_block_length = 16; // Or, 128 bits.
+    m_key = from_hex(key);
     m_key_length = 32; // Or, 256 bits.
     m_state[0][0] = m_state[0][1] = m_state[0][2] = m_state[0][3] = 0;
     m_state[1][0] = m_state[1][1] = m_state[1][2] = m_state[1][3] = 0;
     m_state[2][0] = m_state[2][1] = m_state[2][2] = m_state[2][3] = 0;
     m_state[3][0] = m_state[3][1] = m_state[3][2] = m_state[3][3] = 0;
     memset(m_round_key, 0, 4 * 60 * sizeof(m_round_key[0][0]));
-    hex_string_to_vector(key, m_key);
     key_expansion();
   }
 
@@ -127,19 +128,33 @@ class aes256
     memset(m_state, 0, 4 * 4 * sizeof(m_state[0][0]));
   }
 
-  static void hex_string_to_vector(const std::string &string,
-				   std::vector<uint8_t> &vector)
+  static std::string to_hex(const std::vector<uint8_t> &vector)
   {
-    vector.clear();
+    std::stringstream stream;
+
+    stream << std::hex;
+
+    for(size_t i = 0; i < vector.size(); i += 1)
+      stream << std::setw(2)
+	     << std::setfill('0')
+	     << static_cast<int> (vector[i]);
+
+    return stream.str();
+  }
+
+  static std::vector<uint8_t> from_hex(const std::string &string)
+  {
+    std::vector<uint8_t> vector;
 
     for(size_t i = 0; i < string.length(); i += 2)
       {
-	std::istringstream stream(string.substr(i, 2));
-	uint8_t h = 0;
+	auto byte = static_cast<uint8_t>
+	  (strtol(string.substr(i, 2).c_str(), nullptr, 16));
 
-	stream >> std::hex >> h;
-	vector.push_back(h);
+        vector.push_back(byte);
       }
+
+    return vector;
   }
 
   std::vector<uint8_t> decrypt_block(const std::vector<uint8_t> &block)
