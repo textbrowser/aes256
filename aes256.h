@@ -127,8 +127,8 @@ class aes256
     memset(m_state, 0, 4 * 4 * sizeof(m_state[0][0]));
   }
 
-  static void hex_string_to_vector
-    (const std::string &string, std::vector<uint8_t> &vector)
+  static void hex_string_to_vector(const std::string &string,
+				   std::vector<uint8_t> &vector)
   {
     vector.clear();
 
@@ -141,16 +141,6 @@ class aes256
 	vector.push_back(h);
       }
   }
-
- private:
-  int m_block_length;
-  int m_key_length;
-  size_t m_Nb;
-  size_t m_Nk;
-  size_t m_Nr;
-  std::vector<uint8_t> m_key;
-  uint8_t m_round_key[60][4] {};
-  uint8_t m_state[4][4] {}; // 4 rows, Nb columns.
 
   std::vector<uint8_t> decrypt_block(const std::vector<uint8_t> &block)
   {
@@ -263,6 +253,16 @@ class aes256
     b[3 + 4 * 3] = m_state[3][3];
     return b;
   }
+
+ private:
+  int m_block_length;
+  int m_key_length;
+  size_t m_Nb;
+  size_t m_Nk;
+  size_t m_Nr;
+  std::vector<uint8_t> m_key;
+  uint8_t m_round_key[60][4] {};
+  uint8_t m_state[4][4] {}; // 4 rows, Nb columns.
 
   uint8_t xtime(uint8_t x)
   {
