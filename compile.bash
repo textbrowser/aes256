@@ -4,7 +4,7 @@
 
 rm -f test
 
-g++	-fPIC \
+c++	-fPIC \
 	-Wall \
 	-Walloca \
 	-Wcast-qual \
