@@ -120,7 +120,7 @@ class aes256
 
   ~aes256()
   {
-    for(size_t i = 0; i < m_key.size(); i++)
+    for(size_t i = 0, size = m_key.size(); i < size; i++)
       m_key[i] = 0;
 
     m_key.clear();
@@ -134,7 +134,7 @@ class aes256
 
     stream << std::hex;
 
-    for(size_t i = 0; i < vector.size(); i += 1)
+    for(size_t i = 0, size = vector.size(); i < size; i += 1)
       stream << std::setw(2)
 	     << std::setfill('0')
 	     << static_cast<int> (vector[i]);
@@ -146,7 +146,7 @@ class aes256
   {
     std::vector<uint8_t> vector;
 
-    for(size_t i = 0; i < string.length(); i += 2)
+    for(size_t i = 0, length = string.length(); i < length; i += 2)
       {
 	auto byte = static_cast<uint8_t>
 	  (strtol(string.substr(i, 2).c_str(), nullptr, 16));
@@ -439,9 +439,10 @@ class aes256
 	i += 1;
       }
 
+    auto maximum = m_Nb * (m_Nr + 1);
     uint8_t temp[4];
 
-    while(i < m_Nb * (m_Nr + 1))
+    while(i < maximum)
       {
 	auto difference = i - 1;
 
