@@ -439,10 +439,10 @@ class aes256
 	i += 1;
       }
 
-    auto maximum = m_Nb * (m_Nr + 1);
+    auto iterations = m_Nb * (m_Nr + 1);
     uint8_t temp[4];
 
-    while(i < maximum)
+    while(i < iterations)
       {
 	auto difference = i - 1;
 
