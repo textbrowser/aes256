@@ -496,7 +496,7 @@ class aes256
     volatile auto v = static_cast<unsigned char *> (s);
 
     while(n--)
-      *v++ = (unsigned char) c;
+      *v++ = static_cast<unsigned char> (c);
   }
 
   void mix_columns(void)
