@@ -432,10 +432,18 @@ class aes256
       {
 	auto product = 4 * i;
 
-	m_round_key[i][0] = m_key[product + 0];
-	m_round_key[i][1] = m_key[product + 1];
-	m_round_key[i][2] = m_key[product + 2];
-	m_round_key[i][3] = m_key[product + 3];
+	if(m_key.size() > product)
+	  m_round_key[i][0] = m_key[product + 0];
+
+	if(m_key.size() > product + 1)
+	  m_round_key[i][1] = m_key[product + 1];
+
+	if(m_key.size() > product + 2)
+	  m_round_key[i][2] = m_key[product + 2];
+
+	if(m_key.size() > product + 3)
+	  m_round_key[i][3] = m_key[product + 3];
+
 	i += 1;
       }
 
