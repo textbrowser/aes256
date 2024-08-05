@@ -9,6 +9,7 @@ c++	-fPIC \
 	-Walloca \
 	-Wcast-qual \
 	-Wconversion \
+        -Wdangling-reference \
 	-Werror \
 	-Wextra \
 	-Wformat=2 \
