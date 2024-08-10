@@ -14,6 +14,7 @@ g++	-fPIC \
 	-Wformat-security \
 	-Wno-unused-function \
 	-Wno-unused-variable \
+	-Wold-style-cast \
 	-Wpedantic \
 	-Wpointer-arith \
 	-Wshadow \

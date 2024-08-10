@@ -18,6 +18,7 @@ c++ -fPIC \
     -Wno-unused-function \
     -Wno-unused-variable \
     -Wnull-dereference \
+    -Wold-style-cast \
     -Wpedantic \
     -Wpointer-arith \
     -Wshadow \
