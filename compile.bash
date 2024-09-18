@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# Example only!
-
+set -x
 rm -f test
+
+# Example only!
 
 c++ -fPIC \
     -Wall \
