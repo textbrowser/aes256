@@ -120,12 +120,7 @@ class aes256
 		<< "64 hexadecimal characters."
 		<< std::endl;
 
-    m_Nb = 4;
-    m_Nk = 8;
-    m_Nr = 14;
-    m_block_length = 16; // Or, 128 bits.
     m_key = from_hex(key);
-    m_key_length = 32; // Or, 256 bits.
     m_state[0][0] = m_state[0][1] = m_state[0][2] = m_state[0][3] = 0;
     m_state[1][0] = m_state[1][1] = m_state[1][2] = m_state[1][3] = 0;
     m_state[2][0] = m_state[2][1] = m_state[2][2] = m_state[2][3] = 0;
@@ -283,11 +278,9 @@ class aes256
   }
 
  private:
-  int m_block_length;
-  int m_key_length;
-  size_t m_Nb;
-  size_t m_Nk;
-  size_t m_Nr;
+  const size_t static m_Nb = 4;
+  const size_t static m_Nk = 8;
+  const size_t static m_Nr = 14;
   std::vector<uint8_t> m_key;
   uint8_t m_round_key[60][4] {};
   uint8_t m_state[4][4] {}; // 4 rows, Nb columns.
