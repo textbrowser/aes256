@@ -99,11 +99,27 @@ const static uint8_t s_sbox[256] =
   0xb0, 0x54, 0xbb, 0x16
 };
 
+static void memory_zero(void *ptr, size_t size)
+{
+  auto p = static_cast<volatile unsigned char *> (ptr);
+
+  if(!p)
+    return;
+
+  while(size--)
+    *p++ = 0;
+}
+
 class aes256
 {
  public:
   aes256(const std::string &key)
   {
+    if(key.size() != 64)
+      std::cout << "Please provide a key parameter having "
+		<< "64 hexadecimal characters."
+		<< std::endl;
+
     m_Nb = 4;
     m_Nk = 8;
     m_Nr = 14;
@@ -114,7 +130,7 @@ class aes256
     m_state[1][0] = m_state[1][1] = m_state[1][2] = m_state[1][3] = 0;
     m_state[2][0] = m_state[2][1] = m_state[2][2] = m_state[2][3] = 0;
     m_state[3][0] = m_state[3][1] = m_state[3][2] = m_state[3][3] = 0;
-    memset(m_round_key, 0, 4 * 60 * sizeof(m_round_key[0][0]));
+    memory_zero(m_round_key, 4 * 60 * sizeof(m_round_key[0][0]));
     key_expansion();
   }
 
@@ -124,8 +140,8 @@ class aes256
       m_key[i] = 0;
 
     m_key.clear();
-    memset(m_round_key, 0, 4 * 60 * sizeof(m_round_key[0][0]));
-    memset(m_state, 0, 4 * 4 * sizeof(m_state[0][0]));
+    memory_zero(m_round_key, 4 * 60 * sizeof(m_round_key[0][0]));
+    memory_zero(m_state, 4 * 4 * sizeof(m_state[0][0]));
   }
 
   static std::string to_hex(const std::vector<uint8_t> &vector)
@@ -370,7 +386,7 @@ class aes256
       xtime_special(0x0e, a[2]) ^ xtime_special(0x0b, a[3]);
     m_state[3][3] = xtime_special(0x0b, a[0]) ^ xtime_special(0x0d, a[1]) ^
       xtime_special(0x09, a[2]) ^ xtime_special(0x0e, a[3]);
-    memset(a, 0, 4 * sizeof(a[0]));
+    memory_zero(a, 4 * sizeof(a[0]));
   }
 
   void inv_shift_rows(void)
@@ -401,7 +417,7 @@ class aes256
     m_state[3][(3 + 1) % m_Nb] = temp[1];
     m_state[3][(3 + 2) % m_Nb] = temp[2];
     m_state[3][(3 + 3) % m_Nb] = temp[3];
-    memset(temp, 0, 4 * sizeof(temp[0]));
+    memory_zero(temp, 4 * sizeof(temp[0]));
   }
 
   void inv_sub_bytes(void)
@@ -491,20 +507,9 @@ class aes256
 	m_round_key[i][1] = m_round_key[difference][1] ^ temp[1];
 	m_round_key[i][2] = m_round_key[difference][2] ^ temp[2];
 	m_round_key[i][3] = m_round_key[difference][3] ^ temp[3];
-	memset(temp, 0, 4 * sizeof(temp[0]));
+	memory_zero(temp, 4 * sizeof(temp[0]));
 	i += 1;
       }
-  }
-
-  void memset(void *s, int c, size_t n)
-  {
-    if(!n || !s)
-      return;
-
-    volatile auto v = static_cast<unsigned char *> (s);
-
-    while(n--)
-      *v++ = static_cast<unsigned char> (c);
   }
 
   void mix_columns(void)
@@ -560,8 +565,8 @@ class aes256
     m_state[1][3] = a[0] ^ b[1] ^ a[2] ^ b[2] ^ a[3];
     m_state[2][3] = a[0] ^ a[1] ^ b[2] ^ a[3] ^ b[3];
     m_state[3][3] = a[0] ^ b[0] ^ a[1] ^ a[2] ^ b[3];
-    memset(a, 0, 4 * sizeof(a[0]));
-    memset(b, 0, 4 * sizeof(b[0]));
+    memory_zero(a, 4 * sizeof(a[0]));
+    memory_zero(b, 4 * sizeof(b[0]));
   }
 
   void shift_rows(void)
@@ -592,7 +597,7 @@ class aes256
     m_state[3][1] = temp[1];
     m_state[3][2] = temp[2];
     m_state[3][3] = temp[3];
-    memset(temp, 0, 4 * sizeof(temp[0]));
+    memory_zero(temp, 4 * sizeof(temp[0]));
   }
 
   void sub_bytes(void)
