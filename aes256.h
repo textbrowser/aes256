@@ -136,12 +136,9 @@ class aes256
 
   ~aes256()
   {
-    for(size_t i = 0, size = m_key.size(); i < size; i++)
-      m_key[i] = 0;
-
-    m_key.clear();
-    memory_zero(m_round_key, 4 * 60 * sizeof(m_round_key[0][0]));
-    memory_zero(m_state, 4 * 4 * sizeof(m_state[0][0]));
+    memory_zero(m_key.data(), m_key.size());
+    memory_zero(m_round_key, sizeof(m_round_key));
+    memory_zero(m_state, sizeof(m_state));
   }
 
   static std::string to_hex(const std::vector<uint8_t> &vector)
@@ -492,7 +489,7 @@ class aes256
 	      s_rcon[quotient][2];
 	    temp[3] = s_sbox[static_cast<size_t> (temp[3])] ^
 	      s_rcon[quotient][3];
-	    t = 0;
+	    memory_zero(&t, sizeof(t));
 	  }
 	else if(m_Nk > 0 && i % m_Nk == 4)
 	  {
