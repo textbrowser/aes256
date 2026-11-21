@@ -189,9 +189,9 @@ class aes256
     m_state[3][1] = block[3 + 4 * 1];
     m_state[3][2] = block[3 + 4 * 2];
     m_state[3][3] = block[3 + 4 * 3];
-    add_round_key(m_Nr);
+    add_round_key(s_Nr);
 
-    for(size_t i = m_Nr - 1; i > 0; i--)
+    for(size_t i = s_Nr - 1; i > 0; i--)
       {
 	inv_shift_rows();
 	inv_sub_bytes();
@@ -247,7 +247,7 @@ class aes256
     m_state[3][3] = block[3 + 4 * 3];
     add_round_key(0);
 
-    for(size_t i = 1; i < m_Nr; i++)
+    for(size_t i = 1; i < s_Nr; i++)
       {
 	sub_bytes();
 	shift_rows();
@@ -257,7 +257,7 @@ class aes256
 
     sub_bytes();
     shift_rows();
-    add_round_key(m_Nr);
+    add_round_key(s_Nr);
     b[0 + 4 * 0] = m_state[0][0];
     b[0 + 4 * 1] = m_state[0][1];
     b[0 + 4 * 2] = m_state[0][2];
@@ -278,9 +278,9 @@ class aes256
   }
 
  private:
-  const size_t static m_Nb = 4;
-  const size_t static m_Nk = 8;
-  const size_t static m_Nr = 14;
+  const size_t static s_Nb = 4;
+  const size_t static s_Nk = 8;
+  const size_t static s_Nr = 14;
   std::vector<uint8_t> m_key;
   uint8_t m_round_key[60][4] {};
   uint8_t m_state[4][4] {}; // 4 rows, Nb columns.
@@ -304,7 +304,7 @@ class aes256
 
   void add_round_key(size_t c)
   {
-    auto const product = c * m_Nb;
+    auto const product = c * s_Nb;
 
     m_state[0][0] ^= m_round_key[product + 0][0];
     m_state[0][1] ^= m_round_key[product + 1][0];
@@ -387,26 +387,26 @@ class aes256
     temp[1] = m_state[1][1];
     temp[2] = m_state[1][2];
     temp[3] = m_state[1][3];
-    m_state[1][(1 + 0) % m_Nb] = temp[0];
-    m_state[1][(1 + 1) % m_Nb] = temp[1];
-    m_state[1][(1 + 2) % m_Nb] = temp[2];
-    m_state[1][(1 + 3) % m_Nb] = temp[3];
+    m_state[1][(1 + 0) % s_Nb] = temp[0];
+    m_state[1][(1 + 1) % s_Nb] = temp[1];
+    m_state[1][(1 + 2) % s_Nb] = temp[2];
+    m_state[1][(1 + 3) % s_Nb] = temp[3];
     temp[0] = m_state[2][0];
     temp[1] = m_state[2][1];
     temp[2] = m_state[2][2];
     temp[3] = m_state[2][3];
-    m_state[2][(2 + 0) % m_Nb] = temp[0];
-    m_state[2][(2 + 1) % m_Nb] = temp[1];
-    m_state[2][(2 + 2) % m_Nb] = temp[2];
-    m_state[2][(2 + 3) % m_Nb] = temp[3];
+    m_state[2][(2 + 0) % s_Nb] = temp[0];
+    m_state[2][(2 + 1) % s_Nb] = temp[1];
+    m_state[2][(2 + 2) % s_Nb] = temp[2];
+    m_state[2][(2 + 3) % s_Nb] = temp[3];
     temp[0] = m_state[3][0];
     temp[1] = m_state[3][1];
     temp[2] = m_state[3][2];
     temp[3] = m_state[3][3];
-    m_state[3][(3 + 0) % m_Nb] = temp[0];
-    m_state[3][(3 + 1) % m_Nb] = temp[1];
-    m_state[3][(3 + 2) % m_Nb] = temp[2];
-    m_state[3][(3 + 3) % m_Nb] = temp[3];
+    m_state[3][(3 + 0) % s_Nb] = temp[0];
+    m_state[3][(3 + 1) % s_Nb] = temp[1];
+    m_state[3][(3 + 2) % s_Nb] = temp[2];
+    m_state[3][(3 + 3) % s_Nb] = temp[3];
     memory_zero(temp, 4 * sizeof(temp[0]));
   }
 
@@ -434,7 +434,7 @@ class aes256
   {
     size_t i = 0;
 
-    while(i < m_Nk)
+    while(i < s_Nk)
       {
 	auto const product = 4 * i;
 
@@ -453,7 +453,7 @@ class aes256
 	i += 1;
       }
 
-    auto const iterations = m_Nb * (m_Nr + 1);
+    auto const iterations = s_Nb * (s_Nr + 1);
     uint8_t temp[4];
 
     while(i < iterations)
@@ -465,9 +465,9 @@ class aes256
 	temp[2] = m_round_key[difference][2];
 	temp[3] = m_round_key[difference][3];
 
-	if(m_Nk > 0 && i % m_Nk == 0)
+	if(s_Nk > 0 && i % s_Nk == 0)
 	  {
-	    auto const quotient = i / m_Nk;
+	    auto const quotient = i / s_Nk;
 	    auto t = temp[0];
 
 	    temp[0] = temp[1];
@@ -484,7 +484,7 @@ class aes256
 	      s_rcon[quotient][3];
 	    memory_zero(&t, sizeof(t));
 	  }
-	else if(m_Nk > 0 && i % m_Nk == 4)
+	else if(s_Nk > 0 && i % s_Nk == 4)
 	  {
 	    temp[0] = s_sbox[static_cast<size_t> (temp[0])];
 	    temp[1] = s_sbox[static_cast<size_t> (temp[1])];
@@ -492,7 +492,7 @@ class aes256
 	    temp[3] = s_sbox[static_cast<size_t> (temp[3])];
 	  }
 
-	difference = i - m_Nk;
+	difference = i - s_Nk;
 	m_round_key[i][0] = m_round_key[difference][0] ^ temp[0];
 	m_round_key[i][1] = m_round_key[difference][1] ^ temp[1];
 	m_round_key[i][2] = m_round_key[difference][2] ^ temp[2];
@@ -563,26 +563,26 @@ class aes256
   {
     uint8_t temp[4];
 
-    temp[0] = m_state[1][(1 + 0) % m_Nb];
-    temp[1] = m_state[1][(1 + 1) % m_Nb];
-    temp[2] = m_state[1][(1 + 2) % m_Nb];
-    temp[3] = m_state[1][(1 + 3) % m_Nb];
+    temp[0] = m_state[1][(1 + 0) % s_Nb];
+    temp[1] = m_state[1][(1 + 1) % s_Nb];
+    temp[2] = m_state[1][(1 + 2) % s_Nb];
+    temp[3] = m_state[1][(1 + 3) % s_Nb];
     m_state[1][0] = temp[0];
     m_state[1][1] = temp[1];
     m_state[1][2] = temp[2];
     m_state[1][3] = temp[3];
-    temp[0] = m_state[2][(2 + 0) % m_Nb];
-    temp[1] = m_state[2][(2 + 1) % m_Nb];
-    temp[2] = m_state[2][(2 + 2) % m_Nb];
-    temp[3] = m_state[2][(2 + 3) % m_Nb];
+    temp[0] = m_state[2][(2 + 0) % s_Nb];
+    temp[1] = m_state[2][(2 + 1) % s_Nb];
+    temp[2] = m_state[2][(2 + 2) % s_Nb];
+    temp[3] = m_state[2][(2 + 3) % s_Nb];
     m_state[2][0] = temp[0];
     m_state[2][1] = temp[1];
     m_state[2][2] = temp[2];
     m_state[2][3] = temp[3];
-    temp[0] = m_state[3][(3 + 0) % m_Nb];
-    temp[1] = m_state[3][(3 + 1) % m_Nb];
-    temp[2] = m_state[3][(3 + 2) % m_Nb];
-    temp[3] = m_state[3][(3 + 3) % m_Nb];
+    temp[0] = m_state[3][(3 + 0) % s_Nb];
+    temp[1] = m_state[3][(3 + 1) % s_Nb];
+    temp[2] = m_state[3][(3 + 2) % s_Nb];
+    temp[3] = m_state[3][(3 + 3) % s_Nb];
     m_state[3][0] = temp[0];
     m_state[3][1] = temp[1];
     m_state[3][2] = temp[2];
