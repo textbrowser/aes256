@@ -116,16 +116,30 @@ class aes256
   aes256(const std::string &key)
   {
     if(key.size() != 64)
-      std::cout << "Please provide a key parameter having "
-		<< "64 hexadecimal characters."
-		<< std::endl;
+      {
+	std::cout << "Please provide a key parameter having "
+		  << "64 hexadecimal characters."
+		  << std::endl;
+	throw std::invalid_argument
+	  ("Please provide a key parameter having 64 hexadecimal characters.");
+      }
 
     m_key = from_hex(key);
+
+    if(m_key.empty())
+      {
+	std::cout << "Please provide a key parameter having "
+		  << "64 hexadecimal characters."
+		  << std::endl;
+	throw std::invalid_argument
+	  ("Please provide a key parameter having 64 hexadecimal characters.");
+      }
+
     m_state[0][0] = m_state[0][1] = m_state[0][2] = m_state[0][3] = 0;
     m_state[1][0] = m_state[1][1] = m_state[1][2] = m_state[1][3] = 0;
     m_state[2][0] = m_state[2][1] = m_state[2][2] = m_state[2][3] = 0;
     m_state[3][0] = m_state[3][1] = m_state[3][2] = m_state[3][3] = 0;
-    memory_zero(m_round_key, 4 * 60 * sizeof(m_round_key[0][0]));
+    memory_zero(m_round_key, sizeof(m_round_key));
     key_expansion();
   }
 
@@ -154,12 +168,27 @@ class aes256
   {
     std::vector<uint8_t> vector;
 
+    if(string.size() % 2 != 0)
+      return vector;
+
+    char *endptr;
+
     for(size_t i = 0, length = string.length(); i < length; i += 2)
       {
-	auto const byte = static_cast<uint8_t>
-	  (strtol(string.substr(i, 2).c_str(), nullptr, 16));
+	auto const substring = string.substr(i, 2);
 
-        vector.push_back(byte);
+	if(!std::isxdigit(static_cast<unsigned char>(substring[0])) ||
+	   !std::isxdigit(static_cast<unsigned char>(substring[1])))
+	  return std::vector<uint8_t> ();
+
+	auto const value = strtol(substring.c_str(), &endptr, 16);
+
+	if(*endptr != '\0' ||
+	   endptr == substring.c_str() ||
+	   errno == ERANGE)
+	  return std::vector<uint8_t> ();
+	else
+	  vector.push_back(static_cast<uint8_t> (value));
       }
 
     return vector;
@@ -376,7 +405,7 @@ class aes256
       xtime_special(0x0e, a[2]) ^ xtime_special(0x0b, a[3]);
     m_state[3][3] = xtime_special(0x0b, a[0]) ^ xtime_special(0x0d, a[1]) ^
       xtime_special(0x09, a[2]) ^ xtime_special(0x0e, a[3]);
-    memory_zero(a, 4 * sizeof(a[0]));
+    memory_zero(a, sizeof(a));
   }
 
   void inv_shift_rows(void)
@@ -407,7 +436,7 @@ class aes256
     m_state[3][(3 + 1) % s_Nb] = temp[1];
     m_state[3][(3 + 2) % s_Nb] = temp[2];
     m_state[3][(3 + 3) % s_Nb] = temp[3];
-    memory_zero(temp, 4 * sizeof(temp[0]));
+    memory_zero(temp, sizeof(temp));
   }
 
   void inv_sub_bytes(void)
@@ -497,7 +526,7 @@ class aes256
 	m_round_key[i][1] = m_round_key[difference][1] ^ temp[1];
 	m_round_key[i][2] = m_round_key[difference][2] ^ temp[2];
 	m_round_key[i][3] = m_round_key[difference][3] ^ temp[3];
-	memory_zero(temp, 4 * sizeof(temp[0]));
+	memory_zero(temp, sizeof(temp));
 	i += 1;
       }
   }
@@ -555,8 +584,8 @@ class aes256
     m_state[1][3] = a[0] ^ b[1] ^ a[2] ^ b[2] ^ a[3];
     m_state[2][3] = a[0] ^ a[1] ^ b[2] ^ a[3] ^ b[3];
     m_state[3][3] = a[0] ^ b[0] ^ a[1] ^ a[2] ^ b[3];
-    memory_zero(a, 4 * sizeof(a[0]));
-    memory_zero(b, 4 * sizeof(b[0]));
+    memory_zero(a, sizeof(a));
+    memory_zero(b, sizeof(b));
   }
 
   void shift_rows(void)
@@ -587,7 +616,7 @@ class aes256
     m_state[3][1] = temp[1];
     m_state[3][2] = temp[2];
     m_state[3][3] = temp[3];
-    memory_zero(temp, 4 * sizeof(temp[0]));
+    memory_zero(temp, sizeof(temp));
   }
 
   void sub_bytes(void)
